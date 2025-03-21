@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 public class UserMapper {
     public UserEntity toEntity(UserRequest request) {
         return UserEntity.builder()
+                .id(request.id())
                 .username(request.username())
                 .gmail(request.gmail())
                 .password(request.password())

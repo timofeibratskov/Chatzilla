@@ -1,8 +1,16 @@
 package com.example.user_service.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
+import jakarta.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import lombok.ToString;
+import lombok.Builder;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.UUID;
 
@@ -16,11 +24,6 @@ import java.util.UUID;
 @Table(name = "user_table")
 public class UserEntity {
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
     @Column(
             name = "id",
             updatable = false,
