@@ -1,5 +1,6 @@
 package com.example.chat_service.controller;
 
+import com.example.chat_service.dto.ChatDto;
 import com.example.chat_service.entity.ChatEntity;
 import com.example.chat_service.serivce.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +20,23 @@ public class ChatController {
         return chatService.findAllChats();
     }
 
-    @GetMapping("/{id}")
-    public ChatEntity findChat(@PathVariable UUID id) {
-        return chatService.findChat(id);
+    @GetMapping("/myChats/{userId}")
+    public List<ChatEntity> findAllUsersChats(@PathVariable UUID userId) {
+        return chatService.findAllChatsByUserId(userId);
+    }
+
+    @GetMapping("/{chatId}")
+    public ChatEntity findChat(@PathVariable UUID chatId) {
+        return chatService.findChatById(chatId);
     }
 
     @PostMapping("/chat/{userId_2}")
-    public ChatEntity createNewChat(@RequestParam UUID userId_1, @PathVariable UUID userId_2) {
-        return chatService.createChat(userId_1, userId_2);
+    public ChatEntity findOrCreatChat(@RequestParam UUID userId_1,@PathVariable UUID userId_2) {
+        return chatService.findOrCreateNewChat(userId_1,userId_2);
     }
 
+    @DeleteMapping("/{chatId}")
+    public void deleteChat(@PathVariable UUID chatId) {
+        chatService.dropChat(chatId);
+    }
 }
