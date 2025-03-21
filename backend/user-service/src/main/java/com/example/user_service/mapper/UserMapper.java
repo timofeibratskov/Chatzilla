@@ -3,7 +3,6 @@ package com.example.user_service.mapper;
 import com.example.user_service.dto.UserDto;
 import com.example.user_service.dto.UserRequest;
 import com.example.user_service.entity.UserEntity;
-import jakarta.persistence.Column;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,5 +1,6 @@
 package com.example.user_service.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import com.example.user_service.dto.UserDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,7 +50,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @PostMapping("/register")
-    public UserDto register(@RequestBody UserRequest request) {
+    public UserDto register(@RequestBody @Valid UserRequest request) {
         return service.registerUser(request);
     }
 
@@ -60,7 +61,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @PostMapping("/login")
-    public UserDto login(@RequestBody UserLoginRequest request) {
+    public UserDto login(@RequestBody @Valid UserLoginRequest request) {
         return service.loginUser(request);
     }
 
@@ -77,17 +78,16 @@ public class UserController {
         return service.findUserById(id);
     }
 
-    @Operation(summary = "Получить пользователя по тэгу", description = "Возвращает пользователя по его уникальному тэгу")
+    @Operation(summary = "Получить пользователей по тэгу", description = "Возвращает пользователей по его уникальному тэгу")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Пользователь найден"),
-            @ApiResponse(responseCode = "404", description = "Пользователь не найден"),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @GetMapping("/tag/{tag}")
-    public UserDto getUserByTag(
+    public List<UserDto> getUserByTag(
             @Parameter(description = "Уникальный тэг пользователя", required = true)
             @PathVariable String tag) {
-        return service.findUserByTag(tag);
+        return service.findAllSimilarUsersByTags(tag);
     }
 
     @Operation(summary = "Обновить данные пользователя", description = "Обновляет информацию о пользователе")
@@ -113,7 +113,12 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @DeleteMapping("/delete")
-    public void deleteUser(@RequestBody UserLoginRequest request) {
+    public void deleteUser(@RequestBody @Valid UserLoginRequest request) {
         service.deleteUser(request);
+    }
+    @GetMapping("/randId")
+    @Operation(summary = "дай id")
+    public UUID giveId(){
+        return UUID.randomUUID();
     }
 }

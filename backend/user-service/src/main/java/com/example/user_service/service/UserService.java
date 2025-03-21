@@ -27,34 +27,44 @@ public class UserService {
 
     @Transactional
     public UserDto registerUser(UserRequest request) {
-        checkUniqueTag(request.tag(), null);
-        checkUniqueGmail(request.gmail(), null);
+
+        if (repository.findByGmail(request.gmail()).isPresent()) {
+            throw new ResourceAlreadyExistsException("Почта " + request.gmail() + " уже существует!");
+        }
+
+        String tag = request.tag();
+        if (tag == null || tag.isEmpty()) {
+            tag = "user" + System.currentTimeMillis();
+            System.out.println("....тэг добавили"+ tag);
+        } else {
+            if (repository.findByTag(tag).isPresent()) {
+                throw new ResourceAlreadyExistsException("Тег " + tag + " уже существует!");
+            }
+        }
         UserEntity entity = mapper.toEntity(request);
-        return mapper.toDto(entity);
+        entity.setTag(tag);
+
+        System.out.println(entity.toString());
+
+        UserEntity savedEntity = repository.save(entity);
+
+        return mapper.toDto(savedEntity);
     }
 
     @Transactional(readOnly = true)
     public List<UserDto> findAllUsers() {
-        return repository
-                .findAll()
+        return repository.findAll()
                 .stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public UserDto findUserByTag(String tag) {
-        UserEntity entity = repository.findByTag(tag)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("User with tag: %s not found", tag)));
-        return mapper.toDto(entity);
-    }
 
     @Transactional(readOnly = true)
     public UserDto findUserById(UUID id) {
         UserEntity entity = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("User with id: %s not found", id)));
+                        String.format("Пользователь с id: %s не найден", id)));
         return mapper.toDto(entity);
     }
 
@@ -62,10 +72,10 @@ public class UserService {
     public UserDto loginUser(UserLoginRequest request) {
         UserEntity entity = repository.findByGmail(request.gmail())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("User with email: %s not found", request.gmail())));
+                        String.format("Пользователь с почтой: %s не найден", request.gmail())));
 
         if (!entity.getPassword().equals(request.password())) {
-            throw new InvalidCredentialsException("Invalid password");
+            throw new InvalidCredentialsException("Неверный пароль");
         }
 
         return mapper.toDto(entity);
@@ -73,62 +83,45 @@ public class UserService {
 
     @Transactional
     public UserDto updateUser(UUID id, UserUpdateRequest request) {
-        // Находим пользователя по ID
         UserEntity entity = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь с id: " + id + " не найден"));
 
-        // Проверяем уникальность тэга (если он изменен)
         if (request.tag() != null && !request.tag().equals(entity.getTag())) {
-            checkUniqueTag(request.tag(), id); // userId = id, чтобы исключить текущего пользователя
+            if (repository.findByTag(request.tag()).isPresent()) {
+                throw new ResourceAlreadyExistsException("Тег " + request.tag() + " уже существует!");
+            }
             entity.setTag(request.tag());
         }
 
-        // Обновляем имя (если передано)
         if (request.username() != null) {
             entity.setUsername(request.username());
         }
 
-        // Обновляем пароль (если передан)
         if (request.password() != null) {
-            entity.setPassword(request.password()); // Пока без шифрования
+            entity.setPassword(request.password());
         }
 
-        // Сохраняем изменения
         UserEntity updatedUser = repository.save(entity);
         return mapper.toDto(updatedUser);
     }
 
     @Transactional
     public void deleteUser(UserLoginRequest request) {
-        // Находим пользователя по почте
         UserEntity entity = repository.findByGmail(request.gmail())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("User with email: %s not found", request.gmail())));
+                        String.format("Пользователь с почтой: %s не найден", request.gmail())));
 
-        // Проверяем пароль
         if (!entity.getPassword().equals(request.password())) {
-            throw new InvalidCredentialsException("Invalid password");
+            throw new InvalidCredentialsException("Неверный пароль");
         }
 
-        // Удаляем пользователя
         repository.delete(entity);
     }
 
-    private void checkUniqueTag(String tag, UUID userId) {
-        repository.findByTag(tag).ifPresent(user -> {
-            if (userId == null || !user.getId().equals(userId)) {
-                throw new ResourceAlreadyExistsException(
-                        String.format("This tag: %s already exists", tag));
-            }
-        });
-    }
-
-    private void checkUniqueGmail(String gmail, UUID userId) {
-        repository.findByGmail(gmail).ifPresent(user -> {
-            if (userId == null || !user.getId().equals(userId)) {
-                throw new ResourceAlreadyExistsException(
-                        String.format("This gmail: %s already exists", gmail));
-            }
-        });
+    public List<UserDto> findAllSimilarUsersByTags(String tag) {
+        List<UserEntity> entities = repository.findByTagContaining(tag);
+        return entities.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
     }
 }
