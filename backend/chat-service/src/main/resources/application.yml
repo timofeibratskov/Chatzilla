@@ -9,6 +9,7 @@ spring:
       ddl-auto: none
     show-sql: true
 
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -19,4 +20,4 @@ springdoc:
   default-produces-media-type: application/json
 
 server:
-  port: 8080
+  port: 8081
