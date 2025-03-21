@@ -27,13 +27,9 @@ public class UserService {
 
     @Transactional
     public UserDto registerUser(UserRequest request) {
-        // Проверяем уникальность тэга и почты
-        checkUniqueTag(request.tag(), null); // userId = null, так как это регистрация
+        checkUniqueTag(request.tag(), null);
         checkUniqueGmail(request.gmail(), null);
-
-        // Создаем нового пользователя
         UserEntity entity = mapper.toEntity(request);
-        repository.save(entity);
         return mapper.toDto(entity);
     }
 
@@ -64,12 +60,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserDto loginUser(UserLoginRequest request) {
-        // Находим пользователя по почте
         UserEntity entity = repository.findByGmail(request.gmail())
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("User with email: %s not found", request.gmail())));
 
-        // Проверяем пароль
         if (!entity.getPassword().equals(request.password())) {
             throw new InvalidCredentialsException("Invalid password");
         }
