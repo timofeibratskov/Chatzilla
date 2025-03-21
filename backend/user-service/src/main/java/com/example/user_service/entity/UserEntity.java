@@ -1,16 +1,17 @@
 package com.example.user_service.entity;
 
-import jakarta.persistence.Id;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.Id;
 import jakarta.persistence.Column;
-import lombok.ToString;
-import lombok.Builder;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Builder;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.NonNull;
 
 import java.util.UUID;
 
@@ -21,25 +22,30 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "user_table")
+@Table(
+        name = "user_table",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "gmail"),
+                @UniqueConstraint(columnNames = "tag")
+        }
+)
 public class UserEntity {
     @Id
-    @Column(
-            name = "id",
-            updatable = false,
-            nullable = false
-    )
+    @Column(name = "id", updatable = false, nullable = false, unique = true)
     private UUID id;
-    @Column(name = "user_name")
+
+    @Column(name = "user_name", nullable = false)
     @NonNull
     private String username;
-    @Column(name = "gmail")
+
+    @Column(name = "gmail", nullable = false, unique = true)
     @NonNull
     private String gmail;
-    @Column(name = "password")
+
+    @Column(name = "password", nullable = false,unique = false)
     @NonNull
     private String password;
-    @Column(name = "tag")
-    @NonNull
-    private String tag; // уникальное имя
+
+    @Column(name = "tag", unique = true,nullable = true)
+    private String tag;
 }
