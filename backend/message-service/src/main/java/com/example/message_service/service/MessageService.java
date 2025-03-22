@@ -56,13 +56,9 @@ public class MessageService {
     @Transactional
     public void updateMessage(UUID messageId, MessageRequest request) {
         MessageEntity message = messageMapper.toEntity(findMessage(messageId));
-        System.out.println(request.toString());
         if (!Objects.equals(request.text(), message.getText())) {
-            System.out.println(message.toString());
             message.setText(request.text());
-            System.out.println(message.toString());
             message.setUpdatedAt(LocalDateTime.now());
-            System.out.println(message.toString());
             messageRepository.save(message);
         }
     }
