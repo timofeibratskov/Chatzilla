@@ -26,11 +26,11 @@ public class ChatEntity {
     @Id
     private UUID id;
 
-    @Column(name = "user_id_1", nullable = false)  // Соответствует столбцу в БД
-    private UUID userId1;  // camelCase вместо userId_1
+    @Column(name = "user_id_1", nullable = false)
+    private UUID userId1;
 
-    @Column(name = "user_id_2", nullable = false)  // Соответствует столбцу в БД
-    private UUID userId2;  // camelCase вместо userId_2
+    @Column(name = "user_id_2", nullable = false)
+    private UUID userId2;
 }
 
 

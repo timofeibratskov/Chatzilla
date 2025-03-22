@@ -13,12 +13,10 @@ import java.util.UUID;
 @Repository
 public interface ChatRepository extends JpaRepository<ChatEntity, UUID> {
 
-    // Метод для поиска чата по двум пользователям (в любом порядке)
     @Query("SELECT c FROM ChatEntity c WHERE " +
             "(c.userId1 = :userId1 AND c.userId2 = :userId2) OR " +
             "(c.userId1 = :userId2 AND c.userId2 = :userId1)")
     Optional<ChatEntity> findChatByUserIds(@Param("userId1") UUID userId1, @Param("userId2") UUID userId2);
 
-    // Метод для поиска всех чатов пользователя
     List<ChatEntity> findByUserId1OrUserId2(UUID userId1, UUID userId2);
 }
