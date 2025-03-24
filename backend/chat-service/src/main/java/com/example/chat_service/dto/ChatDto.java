@@ -14,10 +14,9 @@ public record ChatDto(
 
         @Schema(description = "UUID первого пользователя",
                 example = "123e4567-e89b-12d3-a456-426614174000")
-        UUID userId_1,
+        UUID userId1,
 
         @Schema(description = "UUID второго пользователя",
                 example = "123e4567-e89b-12d3-a456-426614174000")
-        UUID userId_2
-) {
-}
+        UUID userId2
+) {}

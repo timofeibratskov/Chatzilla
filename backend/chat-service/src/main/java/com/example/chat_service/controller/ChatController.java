@@ -1,22 +1,18 @@
 package com.example.chat_service.controller;
 
 import com.example.chat_service.dto.ChatDto;
-import com.example.chat_service.dto.ChatRequest;
+import com.example.chat_service.dto.ChatExistenceResponse;
 import com.example.chat_service.serivce.ChatService;
+import com.example.chat_service.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,41 +20,17 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/chats")
+@CrossOrigin(origins = "http://localhost:3000")
 @Tag(name = "Chat API", description = "Управление чатами")
 public class ChatController {
     private final ChatService chatService;
+    private final JwtUtil jwtUtil;
 
-    @Operation(
-            summary = "Получить все чаты",
-            description = "Возвращает список всех существующих чатов",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Успешный запрос",
-                            content = @Content(schema = @Schema(implementation = ChatDto.class))
-                    )
-            }
-    )
-    @GetMapping("/all")
-    public List<ChatDto> findAllChats() {
-        return chatService.AllChats();
-    }
 
-    @Operation(
-            summary = "Получить чаты пользователя",
-            description = "Возвращает все чаты, связанные с указанным пользователем",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Успешный запрос",
-                            content = @Content(schema = @Schema(implementation = ChatDto.class))
-
-                    )
-            }
-    )
-    @GetMapping("/myChats/{userId}")
-    public List<ChatDto> findAllUsersChats(@PathVariable UUID userId) {
-        return chatService.findAllChatsByUserId(userId);
+    @Operation(summary = "Получить чаты пользователя", security = @SecurityRequirement(name = "BearerAuth"))
+    @GetMapping("/myChats")
+    public List<ChatDto> findAllUsersChats(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        return chatService.findMyChats(authHeader);
     }
 
     @Operation(
@@ -75,16 +47,29 @@ public class ChatController {
     }
 
     @Operation(
-            summary = "Создать или найти чат",
-            description = "Создает новый чат или возвращает существующий между двумя пользователями",
+            summary = " найти чат",
+            description = "ищет",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Чат создан/найден"),
+                    @ApiResponse(responseCode = "200", description = "получаем респонз"),
                     @ApiResponse(responseCode = "400", description = "Некорректный запрос")
             }
     )
-    @PostMapping("/chat")
-    public ChatDto findOrCreatChat(@RequestBody ChatRequest request) {
-        return chatService.findOrCreateNewChat(request);
+    @GetMapping("/chat/user/{id}")
+    public ChatExistenceResponse findChatByUser(@RequestHeader(value = "Authorization", required = false) String authHeader, @PathVariable UUID id) {
+        return chatService.checkChatExistence(id, authHeader);
+    }
+
+    @Operation(
+            summary = "создание  чата с пользователем",
+            description = "создает чат ",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "отдает чат дто"),
+                    @ApiResponse(responseCode = "400", description = "Некорректный запрос")
+            }
+    )
+    @PostMapping("/chat/user/{id}")
+    public ChatDto createChat(@RequestHeader(value = "Authorization", required = false) String authHeader, @PathVariable UUID id) {
+        return chatService.CreateNewChat(id, authHeader);
     }
 
     @Operation(

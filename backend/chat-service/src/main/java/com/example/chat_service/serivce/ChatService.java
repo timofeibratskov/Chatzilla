@@ -1,10 +1,12 @@
 package com.example.chat_service.serivce;
 
 import com.example.chat_service.dto.ChatDto;
+import com.example.chat_service.dto.ChatExistenceResponse;
 import com.example.chat_service.dto.ChatRequest;
 import com.example.chat_service.entity.ChatEntity;
 import com.example.chat_service.mapper.ChatMapper;
 import com.example.chat_service.repository.ChatRepository;
+import com.example.chat_service.util.JwtUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,32 +21,42 @@ import java.util.stream.Collectors;
 public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatMapper mapper;
-    private final ChatMapper chatMapper;
+    private final JwtUtil jwtUtil;
 
     @Transactional
-    public ChatDto findOrCreateNewChat(ChatRequest request) {
-        ChatEntity chat = chatRepository
-                .findChatByUserIds(request.userId_1(), request.userId_2())
-                .orElseGet(() -> {
-                    ChatEntity newChat = mapper.toEntity(request);
-                    return chatRepository.save(newChat);
-                });
-        return mapper.toDto(chat);
+    public ChatDto CreateNewChat(UUID otherUserId, String authHeader) {
+        UUID myId = getMyIdFromJwt(authHeader);
+
+        ChatEntity newChat = ChatEntity.builder()
+                .id(UUID.randomUUID())
+                .userId1(myId)
+                .userId2(otherUserId)
+                .build();
+
+        chatRepository.save(newChat);
+        return mapper.toDto(newChat);
+    }
+
+    @Transactional
+    public ChatExistenceResponse checkChatExistence(UUID id, String authHeader) {
+        UUID myId = getMyIdFromJwt(authHeader);
+        return chatRepository.findChatByUserIds(id, myId)
+                .map(chatEntity ->
+                        new ChatExistenceResponse(
+                                chatEntity.getId(),
+                                true))
+                .orElse(new ChatExistenceResponse(
+                        null,
+                        false));
     }
 
     @Transactional(readOnly = true)
-    public List<ChatDto> AllChats() {
-        return chatRepository.findAll()
-                .stream()
-                .map(chatMapper::toDto)
-                .collect(Collectors.toList());
-    }
+    public List<ChatDto> findMyChats(String authHeader) {
+        UUID myId = getMyIdFromJwt(authHeader);
 
-    @Transactional(readOnly = true)
-    public List<ChatDto> findAllChatsByUserId(UUID userId) {
-        return chatRepository.findByUserId1OrUserId2(userId, userId)
+        return chatRepository.findByUserId1OrUserId2(myId, myId)
                 .stream()
-                .map(chatMapper::toDto)
+                .map(chat -> mapper.toDto(chat))
                 .collect(Collectors.toList());
     }
 
@@ -59,6 +71,12 @@ public class ChatService {
     @Transactional
     public void dropChat(UUID chatId) {
         ChatDto chat = findChatById(chatId);
+
         chatRepository.delete(mapper.toEntity(chat));
+    }
+
+    private UUID getMyIdFromJwt(String authHeader) {
+        String token = authHeader.substring(7);
+        return UUID.fromString(jwtUtil.getUserIdFromToken(token));
     }
 }
