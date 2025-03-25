@@ -34,7 +34,7 @@ public class ChatService {
                 .build();
 
         chatRepository.save(newChat);
-        return mapper.toDto(newChat);
+        return mapper.toDto(newChat);//[чатайди и user-сущность]
     }
 
     @Transactional
@@ -57,7 +57,8 @@ public class ChatService {
         return chatRepository.findByUserId1OrUserId2(myId, myId)
                 .stream()
                 .map(chat -> mapper.toDto(chat))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());//[чатайди и user-сущность]
+
     }
 
     @Transactional(readOnly = true)
