@@ -1,19 +1,21 @@
 package com.example.chat_service.serivce;
 
-import com.example.chat_service.dto.ChatDto;
-import com.example.chat_service.dto.ChatExistenceResponse;
-import com.example.chat_service.dto.ChatRequest;
+import com.example.chat_service.client.UserServiceClient;
+import com.example.chat_service.dto.*;
 import com.example.chat_service.entity.ChatEntity;
 import com.example.chat_service.mapper.ChatMapper;
 import com.example.chat_service.repository.ChatRepository;
 import com.example.chat_service.util.JwtUtil;
+import com.thoughtworks.xstream.converters.basic.UUIDConverter;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -22,19 +24,16 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatMapper mapper;
     private final JwtUtil jwtUtil;
+    private final UserServiceClient client;
 
     @Transactional
-    public ChatDto CreateNewChat(UUID otherUserId, String authHeader) {
+    public ChatUserPairResponse CreateNewChat(UUID userId,String authHeader) {
         UUID myId = getMyIdFromJwt(authHeader);
 
-        ChatEntity newChat = ChatEntity.builder()
-                .id(UUID.randomUUID())
-                .userId1(myId)
-                .userId2(otherUserId)
-                .build();
+        UserDto user = client.getUserById(userId);
 
-        chatRepository.save(newChat);
-        return mapper.toDto(newChat);//[чатайди и user-сущность]
+        UUID chatId = chatRepository.save(mapper.toEntity(myId, userId)).getId();
+        return mapper.toResponse(chatId, user);
     }
 
     @Transactional
@@ -51,14 +50,29 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChatDto> findMyChats(String authHeader) {
+    public List<ChatUserPairResponse> findMyChats(String authHeader) {
         UUID myId = getMyIdFromJwt(authHeader);
+        List<ChatRepository.ChatProjection> chatProjections = chatRepository.findChatPartners(myId);
 
-        return chatRepository.findByUserId1OrUserId2(myId, myId)
+        List<UUID> partnersIds = chatProjections.stream()
+                .map(ChatRepository.ChatProjection::getPartnerId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<UUID, UserDto> usersMap = client.getUsersBatch(partnersIds)
                 .stream()
-                .map(chat -> mapper.toDto(chat))
-                .collect(Collectors.toList());//[чатайди и user-сущность]
+                .collect(Collectors.toMap(UserDto::id, Function.identity()));
 
+        return chatProjections.stream()
+                .map(projection ->
+                        new ChatUserPairResponse(
+                                projection.getChatId(),
+                                usersMap.getOrDefault(
+                                        projection.getPartnerId(),
+                                        createDeletedUserDto(projection.getPartnerId())
+                                )
+                        ))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -79,5 +93,13 @@ public class ChatService {
     private UUID getMyIdFromJwt(String authHeader) {
         String token = authHeader.substring(7);
         return UUID.fromString(jwtUtil.getUserIdFromToken(token));
+    }
+
+    private UserDto createDeletedUserDto(UUID userId) {
+        return UserDto.builder()
+                .id(userId)
+                .username("Deleted User")
+                .tag("deleted")
+                .build();
     }
 }
