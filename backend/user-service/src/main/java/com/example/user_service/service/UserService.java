@@ -1,9 +1,6 @@
 package com.example.user_service.service;
 
-import com.example.user_service.dto.UserDto;
-import com.example.user_service.dto.UserRequest;
-import com.example.user_service.dto.UserLoginRequest;
-import com.example.user_service.dto.UserUpdateRequest;
+import com.example.user_service.dto.*;
 import com.example.user_service.entity.UserEntity;
 import com.example.user_service.exception.InvalidCredentialsException;
 import com.example.user_service.exception.ResourceAlreadyExistsException;
@@ -35,7 +32,7 @@ public class UserService {
         String tag = request.tag();
         if (tag == null || tag.isEmpty()) {
             tag = "user" + System.currentTimeMillis();
-            System.out.println("....тэг добавили"+ tag);
+            System.out.println("....тэг добавили" + tag);
         } else {
             if (repository.findByTag(tag).isPresent()) {
                 throw new ResourceAlreadyExistsException("Тег " + tag + " уже существует!");
@@ -116,6 +113,13 @@ public class UserService {
         }
 
         repository.delete(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserDtoResponse> findUsersByIds(List<UUID> ids) {
+        return repository.findAllByIdIn(ids)
+                .stream().map(mapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     public List<UserDto> findAllSimilarUsersByTags(String tag) {

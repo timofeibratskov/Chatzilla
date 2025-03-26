@@ -1,6 +1,7 @@
 package com.example.user_service.mapper;
 
 import com.example.user_service.dto.UserDto;
+import com.example.user_service.dto.UserDtoResponse;
 import com.example.user_service.dto.UserRequest;
 import com.example.user_service.entity.UserEntity;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,14 @@ public class UserMapper {
                 .gmail(entity.getGmail())
                 .password(entity.getPassword())
                 .tag(entity.getTag())
+                .build();
+    }
+
+    public UserDtoResponse toResponse(UserEntity entity) {
+        return UserDtoResponse.builder()
+                .id(entity.getId())
+                .tag(entity.getTag())
+                .username(entity.getUsername())
                 .build();
     }
 }

@@ -15,4 +15,6 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     Optional<UserEntity> findByTag(String tag);
 
     List<UserEntity> findByTagContaining(String tag);
+
+    List<UserEntity> findAllByIdIn(List<UUID> ids);
 }
