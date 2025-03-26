@@ -2,6 +2,8 @@ package com.example.chat_service.mapper;
 
 import com.example.chat_service.dto.ChatDto;
 import com.example.chat_service.dto.ChatRequest;
+import com.example.chat_service.dto.ChatUserPairResponse;
+import com.example.chat_service.dto.UserDto;
 import com.example.chat_service.entity.ChatEntity;
 import org.springframework.stereotype.Component;
 
@@ -10,11 +12,18 @@ import java.util.UUID;
 @Component
 public class ChatMapper {
 
-    public ChatEntity toEntity(ChatRequest request) {
+    public ChatUserPairResponse toResponse(UUID chatId, UserDto user){
+        return ChatUserPairResponse.builder()
+                .chatId(chatId)
+                .user(user)
+                .build();
+    }
+
+    public ChatEntity toEntity(UUID userid,UUID myId){
         return ChatEntity.builder()
                 .id(UUID.randomUUID())
-                .userId1(request.userId_1())
-                .userId2(request.userId_2())
+                .userId1(myId)
+                .userId2(userid)
                 .build();
     }
 
