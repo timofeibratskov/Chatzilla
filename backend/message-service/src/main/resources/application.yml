@@ -30,3 +30,6 @@ eureka:
       defaultZone: http://localhost:8761/eureka
     fetch-registry: true
     register-with-eureka: true
+
+logging.level.org.springframework.web.socket: DEBUG
+logging.level.org.springframework.messaging: DEBUG
