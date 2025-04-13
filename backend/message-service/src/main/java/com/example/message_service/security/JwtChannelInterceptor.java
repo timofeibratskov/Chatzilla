@@ -33,7 +33,7 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                     System.out.println("Extracted userId: " + userId);
                     Authentication auth = new UsernamePasswordAuthenticationToken(userId, null);
                     accessor.setUser(auth);
-                    accessor.getSessionAttributes().put("userId", userId); // Сохраняем userId в атрибутах сессии
+                    accessor.getSessionAttributes().put("userId", userId);
                     System.out.println("Authentication set for user: " + userId + ", Principal: " + accessor.getUser());
                 } catch (Exception e) {
                     System.err.println("Error validating JWT: " + e.getMessage());

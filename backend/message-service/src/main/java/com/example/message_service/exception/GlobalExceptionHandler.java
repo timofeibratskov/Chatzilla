@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.rmi.AccessException;
+
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -20,5 +22,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(MessageOwnershipException.class)
+    public ResponseEntity<ErrorResponse> handleOwnershipViolation(MessageOwnershipException ex) {
+        ErrorResponse error = new ErrorResponse(
+                "OWNERSHIP_VIOLATION",  // Стандартный код ошибки
+                ex.getMessage()         // Детали из исключения
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
 
 }
