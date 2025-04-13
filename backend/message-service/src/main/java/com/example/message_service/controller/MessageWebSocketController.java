@@ -38,20 +38,24 @@ public class MessageWebSocketController {
     public MessageResponse updateMessage(@DestinationVariable UUID chatId,
                                          @DestinationVariable UUID messageId,
                                          @Payload MessageRequest request,
-                                         SimpMessageHeaderAccessor accessor)throws AccessException {
+                                         SimpMessageHeaderAccessor accessor) throws AccessException {
 
         String userId = (String) accessor.getSessionAttributes().get("userId");
         if (userId == null) {
             throw new AccessException("problema with Id");
         }
-        return messageService.updateMessage(messageId, request,userId);
+        return messageService.updateMessage(messageId, request, userId);
     }
 
     @MessageMapping("/chat/{chatId}/message/{messageId}/delete")
     @SendTo("/topic/chat/{chatId}/delete")
     public UUID deleteMessage(@DestinationVariable UUID chatId,
-                              @DestinationVariable UUID messageId) {
-        System.out.println("Delete message " + messageId + " in chat " + chatId);
-        return messageService.dropMessage(messageId);
+                              @DestinationVariable UUID messageId,
+                              SimpMessageHeaderAccessor accessor) throws AccessException {
+        String userId = (String) accessor.getSessionAttributes().get("userId");
+        if (userId == null) {
+            throw new AccessException("problema with Id");
+        }
+        return messageService.dropMessage(messageId, userId);
     }
 }

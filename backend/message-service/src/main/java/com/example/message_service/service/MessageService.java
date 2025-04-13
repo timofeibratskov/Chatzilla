@@ -9,7 +9,6 @@ import com.example.message_service.mapper.MessageMapper;
 import com.example.message_service.repository.MessageRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.expression.AccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +26,8 @@ public class MessageService {
     private final MessageMapper messageMapper;
 
     @Transactional
-    public MessageResponse createMessage(UUID chatId, MessageRequest request,String userId) {
-        MessageEntity message = messageMapper.toEntity(request, chatId,userId);
+    public MessageResponse createMessage(UUID chatId, MessageRequest request, String userId) {
+        MessageEntity message = messageMapper.toEntity(request, chatId, userId);
         messageRepository.save(message);
         return messageMapper.toResponse(message);
     }
@@ -51,11 +50,9 @@ public class MessageService {
     }
 
     @Transactional
-    public MessageResponse updateMessage(UUID messageId, MessageRequest request,String userId)  {
+    public MessageResponse updateMessage(UUID messageId, MessageRequest request, String userId) {
         MessageEntity message = messageMapper.toEntity(findMessage(messageId));
-        if (!message.getSenderId().equals(UUID.fromString(userId))) {
-            throw new MessageOwnershipException("You are not authorized to update this message.");
-        }
+        usersMessageChecker(message, userId);
         if (!Objects.equals(request.text(), message.getText())) {
             message.setText(request.text());
             message.setUpdatedAt(LocalDateTime.now());
@@ -66,9 +63,17 @@ public class MessageService {
     }
 
     @Transactional
-    public UUID dropMessage(UUID messageId) {
-        MessageDto message = findMessage(messageId);
-        messageRepository.delete(messageMapper.toEntity(message));
+    public UUID dropMessage(UUID messageId, String userId) {
+        MessageDto messageDto = findMessage(messageId);
+        MessageEntity message = messageMapper.toEntity(messageDto);
+        usersMessageChecker(message, userId);
+        messageRepository.delete(message);
         return messageId;
+    }
+
+    private void usersMessageChecker(MessageEntity message, String userId) {
+        if (!message.getSenderId().equals(UUID.fromString(userId))) {
+            throw new MessageOwnershipException("You are not authorized to update or delete this message.");
+        }
     }
 }
