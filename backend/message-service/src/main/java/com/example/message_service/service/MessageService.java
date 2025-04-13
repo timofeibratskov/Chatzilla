@@ -2,6 +2,7 @@ package com.example.message_service.service;
 
 import com.example.message_service.dto.MessageDto;
 import com.example.message_service.dto.MessageRequest;
+import com.example.message_service.dto.MessageResponse;
 import com.example.message_service.entity.MessageEntity;
 import com.example.message_service.mapper.MessageMapper;
 import com.example.message_service.repository.MessageRepository;
@@ -19,28 +20,22 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class MessageService {
+
     private final MessageRepository messageRepository;
     private final MessageMapper messageMapper;
 
     @Transactional
-    public void createMessage(UUID chatId, MessageRequest request) {
-        MessageEntity message = messageMapper.toEntity(request, chatId);
+    public MessageResponse createMessage(UUID chatId, MessageRequest request,String userId) {
+        MessageEntity message = messageMapper.toEntity(request, chatId,userId);
         messageRepository.save(message);
+        return messageMapper.toResponse(message);
     }
 
     @Transactional(readOnly = true)
-    public List<MessageDto> findAllMessages() {
-        return messageRepository.findAll()
-                .stream()
-                .map(messageMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<MessageDto> findAllMessagesInChat(UUID chatId) {
+    public List<MessageResponse> findAllMessagesInChat(UUID chatId) {
         return messageRepository.findAllByChatId(chatId)
                 .stream()
-                .map(messageMapper::toDto)
+                .map(messageMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -54,18 +49,21 @@ public class MessageService {
     }
 
     @Transactional
-    public void updateMessage(UUID messageId, MessageRequest request) {
+    public MessageResponse updateMessage(UUID messageId, MessageRequest request) {
         MessageEntity message = messageMapper.toEntity(findMessage(messageId));
         if (!Objects.equals(request.text(), message.getText())) {
             message.setText(request.text());
             message.setUpdatedAt(LocalDateTime.now());
             messageRepository.save(message);
         }
+        return messageMapper.toResponse(message);
+
     }
 
     @Transactional
-    public void dropMessage(UUID messageId) {
+    public UUID dropMessage(UUID messageId) {
         MessageDto message = findMessage(messageId);
         messageRepository.delete(messageMapper.toEntity(message));
+        return messageId;
     }
 }
