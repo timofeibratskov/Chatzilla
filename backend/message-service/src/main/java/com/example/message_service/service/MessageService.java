@@ -33,7 +33,7 @@ public class MessageService {
 
     @Transactional(readOnly = true)
     public List<MessageResponse> findAllMessagesInChat(UUID chatId) {
-        return messageRepository.findAllByChatId(chatId)
+        return messageRepository.findAllByChatIdOrderByCreatedAtAsc(chatId)
                 .stream()
                 .map(messageMapper::toResponse)
                 .collect(Collectors.toList());

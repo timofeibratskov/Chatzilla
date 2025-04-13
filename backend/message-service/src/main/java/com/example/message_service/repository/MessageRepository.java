@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface MessageRepository extends JpaRepository<MessageEntity, UUID> {
-    List<MessageEntity> findAllByChatId(UUID chatId);
+    List<MessageEntity> findAllByChatIdOrderByCreatedAtAsc(UUID chatId);
 }
