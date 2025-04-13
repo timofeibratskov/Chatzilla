@@ -4,10 +4,12 @@ import com.example.message_service.dto.MessageDto;
 import com.example.message_service.dto.MessageRequest;
 import com.example.message_service.dto.MessageResponse;
 import com.example.message_service.entity.MessageEntity;
+import com.example.message_service.exception.MessageOwnershipException;
 import com.example.message_service.mapper.MessageMapper;
 import com.example.message_service.repository.MessageRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.expression.AccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,8 +51,11 @@ public class MessageService {
     }
 
     @Transactional
-    public MessageResponse updateMessage(UUID messageId, MessageRequest request) {
+    public MessageResponse updateMessage(UUID messageId, MessageRequest request,String userId)  {
         MessageEntity message = messageMapper.toEntity(findMessage(messageId));
+        if (!message.getSenderId().equals(UUID.fromString(userId))) {
+            throw new MessageOwnershipException("You are not authorized to update this message.");
+        }
         if (!Objects.equals(request.text(), message.getText())) {
             message.setText(request.text());
             message.setUpdatedAt(LocalDateTime.now());
