@@ -4,11 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.lang.Nullable;
 
-import java.util.UUID;
-
 public record UserRequest(
-        UUID id,
-
         @NotBlank(message = "Username обязателен!")
         String username,
 

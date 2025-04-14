@@ -6,11 +6,13 @@ import com.example.user_service.dto.UserRequest;
 import com.example.user_service.entity.UserEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class UserMapper {
     public UserEntity toEntity(UserRequest request) {
         return UserEntity.builder()
-                .id(request.id())
+                .id(UUID.randomUUID())
                 .username(request.username())
                 .gmail(request.gmail())
                 .password(request.password())

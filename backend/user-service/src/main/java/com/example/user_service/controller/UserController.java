@@ -1,12 +1,16 @@
 package com.example.user_service.controller;
 
-import com.example.user_service.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.example.user_service.dto.UserDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import com.example.user_service.dto.UserRequest;
+import com.example.user_service.dto.UserDtoResponse;
 import com.example.user_service.service.UserService;
+import com.example.user_service.dto.UserLoginRequest;
+import com.example.user_service.dto.UserUpdateRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,7 +41,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @PostMapping("/register")
-    public UserDto register(@RequestBody @Valid UserRequest request) {
+    public String register(@RequestBody @Valid UserRequest request) {
         return service.registerUser(request);
     }
 
@@ -48,7 +52,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @PostMapping("/login")
-    public UserDto login(@RequestBody @Valid UserLoginRequest request) {
+    public String login(@RequestBody @Valid UserLoginRequest request) {
         return service.loginUser(request);
     }
 
@@ -85,11 +89,11 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @PutMapping("/{id}")
-    public UserDto updateUser(
+    public void updateUser(
             @Parameter(description = "Уникальный идентификатор пользователя", required = true)
             @PathVariable UUID id,
             @RequestBody UserUpdateRequest request) {
-        return service.updateUser(id, request);
+        service.updateUser(id, request);
     }
 
     @Operation(summary = "Удалить пользователя", description = "Удаляет пользователя по его учетным данным")
@@ -105,7 +109,7 @@ public class UserController {
     }
 
     @PostMapping("/batch")
-    @Operation(summary = "Получить пользователей по списку ID",description = "это только для коммуникации с chat сервисом")
+    @Operation(summary = "Получить пользователей по списку ID", description = "это только для коммуникации с chat сервисом")
     public List<UserDtoResponse> getUsersBatch(@RequestBody List<UUID> ids) {
         return service.findUsersByIds(ids);
     }
