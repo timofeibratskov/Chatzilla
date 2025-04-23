@@ -41,7 +41,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @PostMapping("/register")
-    public String register(@RequestBody @Valid UserRequest request) {
+    public UserDtoResponse register(@RequestBody @Valid UserRequest request) {
         return service.registerUser(request);
     }
 
@@ -52,7 +52,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @PostMapping("/login")
-    public String login(@RequestBody @Valid UserLoginRequest request) {
+    public UserDtoResponse login(@RequestBody @Valid UserLoginRequest request) {
         return service.loginUser(request);
     }
 
@@ -75,7 +75,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
     })
     @GetMapping("/tag/{tag}")
-    public List<UserDto> getUserByTag(
+    public List<UserDtoResponse> getUserByTag(
             @Parameter(description = "Уникальный тэг пользователя", required = true)
             @PathVariable String tag) {
         return service.findAllSimilarUsersByTags(tag);

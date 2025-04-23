@@ -8,6 +8,7 @@ import java.util.UUID;
 public record UserDtoResponse(
         UUID id,
         String username,
-        String tag
+        String tag,
+        String token
 ) {
 }

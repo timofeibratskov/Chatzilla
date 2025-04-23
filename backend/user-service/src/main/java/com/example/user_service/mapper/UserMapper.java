@@ -37,4 +37,13 @@ public class UserMapper {
                 .username(entity.getUsername())
                 .build();
     }
+
+    public UserDtoResponse toResponse(UserEntity entity, String token) {
+        return UserDtoResponse.builder()
+                .id(entity.getId())
+                .tag(entity.getTag())
+                .username(entity.getUsername())
+                .token(token)
+                .build();
+    }
 }
