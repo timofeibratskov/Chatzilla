@@ -14,18 +14,17 @@ public class JwtUtil {
 
     public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey()) // Устанавливаем ключ для проверки подписи
+                .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
-    // Метод для получения user_id из токена
+
     public String getUserIdFromToken(String token) {
         Claims claims = extractAllClaims(token);
-        return claims.get("sub", String.class); // Предполагаем, что user_id хранится в токене
+        return claims.get("user_id", String.class);
     }
 
-    // Метод для получения секретного ключа
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
