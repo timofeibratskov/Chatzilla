@@ -1,11 +1,10 @@
 package com.example.user_service.service;
 
-import com.example.user_service.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import com.example.user_service.dto.UserDto;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.user_service.dto.UserRequest;
+import com.example.user_service.security.JwtUtil;
 import com.example.user_service.entity.UserEntity;
 import com.example.user_service.mapper.UserMapper;
 import jakarta.persistence.EntityNotFoundException;
@@ -14,6 +13,7 @@ import com.example.user_service.dto.UserLoginRequest;
 import com.example.user_service.dto.UserUpdateRequest;
 import com.example.user_service.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.user_service.exception.InvalidCredentialsException;
 import com.example.user_service.exception.ResourceAlreadyExistsException;
 
@@ -63,7 +63,7 @@ public class UserService {
         UserEntity entity = repository.findByGmail(request.gmail())
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Пользователь с почтой: %s не найден", request.gmail())));
-        if (!entity.getPassword().equals(passwordEncoder.encode(request.password()))) {
+        if (!passwordEncoder.matches(request.password(), entity.getPassword())) {
             throw new InvalidCredentialsException("Неверный пароль");
         }
         return mapper.toResponse(entity, jwtUtil.generateToken(entity.getId()));
@@ -93,7 +93,7 @@ public class UserService {
         UserEntity entity = repository.findByGmail(request.gmail())
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Пользователь с почтой: %s не найден", request.gmail())));
-        if (!entity.getPassword().equals(passwordEncoder.encode(request.password()))) {
+        if (!passwordEncoder.matches(request.password(), entity.getPassword())) {
             throw new InvalidCredentialsException("Неверный пароль");
         }
         repository.delete(entity);
@@ -106,6 +106,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<UserDtoResponse> findAllSimilarUsersByTags(String tag) {
         List<UserEntity> entities = repository.findByTagContaining(tag);
         return entities.stream()
