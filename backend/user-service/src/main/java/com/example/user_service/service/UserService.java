@@ -3,6 +3,7 @@ package com.example.user_service.service;
 import com.example.user_service.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import com.example.user_service.dto.UserDto;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.user_service.dto.UserRequest;
 import com.example.user_service.entity.UserEntity;
@@ -27,6 +28,7 @@ public class UserService {
     private final UserRepository repository;
     private final UserMapper mapper;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UserDtoResponse registerUser(UserRequest request) {
@@ -43,6 +45,7 @@ public class UserService {
         }
         UserEntity entity = mapper.toEntity(request);
         entity.setTag(tag);
+        entity.setPassword(passwordEncoder.encode(entity.getPassword()));
         repository.save(entity);
         return mapper.toResponse(entity, jwtUtil.generateToken(entity.getId()));
     }
@@ -60,7 +63,7 @@ public class UserService {
         UserEntity entity = repository.findByGmail(request.gmail())
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Пользователь с почтой: %s не найден", request.gmail())));
-        if (!entity.getPassword().equals(request.password())) {
+        if (!entity.getPassword().equals(passwordEncoder.encode(request.password()))) {
             throw new InvalidCredentialsException("Неверный пароль");
         }
         return mapper.toResponse(entity, jwtUtil.generateToken(entity.getId()));
@@ -80,7 +83,7 @@ public class UserService {
             entity.setUsername(request.username());
         }
         if (request.password() != null) {
-            entity.setPassword(request.password());
+            entity.setPassword(passwordEncoder.encode(request.password()));
         }
         repository.save(entity);
     }
@@ -90,7 +93,7 @@ public class UserService {
         UserEntity entity = repository.findByGmail(request.gmail())
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Пользователь с почтой: %s не найден", request.gmail())));
-        if (!entity.getPassword().equals(request.password())) {
+        if (!entity.getPassword().equals(passwordEncoder.encode(request.password()))) {
             throw new InvalidCredentialsException("Неверный пароль");
         }
         repository.delete(entity);
