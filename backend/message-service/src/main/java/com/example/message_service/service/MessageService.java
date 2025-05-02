@@ -40,6 +40,15 @@ public class MessageService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void dropAllMessagesInChat(UUID chatId) {
+        List<MessageEntity> messages = messageRepository.findAllByChatIdOrderByCreatedAtAsc(chatId);
+        if (messages.isEmpty()) {
+            throw new EntityNotFoundException("история сообщений не найдена или уже удалена");
+        }
+        messageRepository.deleteAll(messages);
+    }
+
     @Transactional(readOnly = true)
     public MessageDto findMessage(UUID messageId) {
         MessageEntity entity = messageRepository.findById(messageId).orElseThrow(()
