@@ -1,21 +1,21 @@
 package com.example.message_service.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import com.example.message_service.dto.MessageDto;
+import jakarta.persistence.EntityNotFoundException;
 import com.example.message_service.dto.MessageRequest;
 import com.example.message_service.dto.MessageResponse;
 import com.example.message_service.entity.MessageEntity;
-import com.example.message_service.exception.MessageOwnershipException;
 import com.example.message_service.mapper.MessageMapper;
-import com.example.message_service.repository.MessageRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.message_service.repository.MessageRepository;
+import com.example.message_service.exception.MessageOwnershipException;
 
-import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,9 +43,6 @@ public class MessageService {
     @Transactional
     public void dropAllMessagesInChat(UUID chatId) {
         List<MessageEntity> messages = messageRepository.findAllByChatIdOrderByCreatedAtAsc(chatId);
-        if (messages.isEmpty()) {
-            throw new EntityNotFoundException("история сообщений не найдена или уже удалена");
-        }
         messageRepository.deleteAll(messages);
     }
 
