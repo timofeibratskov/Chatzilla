@@ -1,8 +1,9 @@
 package com.example.message_service.security.util;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,15 @@ public class JwtUtil {
     public String getUserIdFromToken(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get(USER_ID_CLAIM, String.class);
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            extractAllClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
     private SecretKey getSigningKey() {
