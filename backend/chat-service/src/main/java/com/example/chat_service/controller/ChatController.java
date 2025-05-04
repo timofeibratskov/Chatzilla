@@ -1,23 +1,22 @@
 package com.example.chat_service.controller;
 
+import lombok.RequiredArgsConstructor;
 import com.example.chat_service.dto.ChatDto;
-import com.example.chat_service.dto.ChatExistenceResponse;
-import com.example.chat_service.dto.ChatUserPairResponse;
-import com.example.chat_service.serivce.ChatService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestHeader;
+import com.example.chat_service.serivce.ChatService;
+import com.example.chat_service.dto.ChatUserPairResponse;
+import com.example.chat_service.dto.ChatExistenceResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,7 +30,8 @@ public class ChatController {
     private final ChatService chatService;
 
 
-    @Operation(summary = "Получить чаты пользователя", security = @SecurityRequirement(name = "BearerAuth"))
+    @Operation(summary = "Получить чаты пользователя",
+            description = "Возвращает чаты пользователя в которых состоит он")
     @GetMapping("/myChats")
     public List<ChatUserPairResponse> findAllUsersChats(
             @RequestHeader(value = "Authorization", required = false) String authHeader
@@ -80,9 +80,7 @@ public class ChatController {
                     required = false)
             String authHeader,
             @PathVariable UUID id) {
-        return chatService.CreateNewChat(id
-                 , authHeader
-        );
+        return chatService.createNewChat(id, authHeader);
     }
 
     @Operation(

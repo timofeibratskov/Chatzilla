@@ -6,8 +6,7 @@ spring:
     url: jdbc:postgresql://aws-0-eu-central-1.pooler.supabase.com:5432/postgres?user=postgres.kyluupxxbezvgssczrhc&password=dTJ*.@zgUj4Eg69
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 5
-
+      maximum-pool-size: 7
   jpa:
     hibernate:
       ddl-auto: none

@@ -1,12 +1,12 @@
 package com.example.chat_service.serivce;
 
+import com.example.chat_service.client.MessageServiceClient;
 import com.example.chat_service.client.UserServiceClient;
 import com.example.chat_service.dto.*;
 import com.example.chat_service.entity.ChatEntity;
 import com.example.chat_service.mapper.ChatMapper;
 import com.example.chat_service.repository.ChatRepository;
-import com.example.chat_service.util.JwtUtil;
-import com.thoughtworks.xstream.converters.basic.UUIDConverter;
+import com.example.chat_service.security.JwtUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,17 +24,27 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatMapper mapper;
     private final JwtUtil jwtUtil;
-    private final UserServiceClient client;
+    private final UserServiceClient userServiceClient;
+    private final MessageServiceClient messageServiceClient;
 
     @Transactional
-    public ChatUserPairResponse CreateNewChat(UUID userId,String authHeader) {
+    public ChatUserPairResponse createNewChat(UUID userId, String authHeader) {
         UUID myId = getMyIdFromJwt(authHeader);
+        UserDto user;
 
-        UserDto user = client.getUserById(userId);
+        try {
+            user = userServiceClient.getUserById(userId, authHeader);
+        } catch (Exception ex) {
+            if (ex.getMessage() != null && ex.getMessage().contains("404")) {
+                throw new EntityNotFoundException("Пользователь с id: " + userId + " не найден");
+            }
+            throw ex;
+        }
 
         UUID chatId = chatRepository.save(mapper.toEntity(myId, userId)).getId();
         return mapper.toResponse(chatId, user);
     }
+
 
     @Transactional
     public ChatExistenceResponse checkChatExistence(UUID id, String authHeader) {
@@ -53,13 +63,12 @@ public class ChatService {
     public List<ChatUserPairResponse> findMyChats(String authHeader) {
         UUID myId = getMyIdFromJwt(authHeader);
         List<ChatRepository.ChatProjection> chatProjections = chatRepository.findChatPartners(myId);
-
         List<UUID> partnersIds = chatProjections.stream()
                 .map(ChatRepository.ChatProjection::getPartnerId)
                 .distinct()
                 .collect(Collectors.toList());
 
-        Map<UUID, UserDto> usersMap = client.getUsersBatch(partnersIds)
+        Map<UUID, UserDto> usersMap = userServiceClient.getUsersBatch(partnersIds,authHeader)
                 .stream()
                 .collect(Collectors.toMap(UserDto::id, Function.identity()));
 
@@ -88,6 +97,7 @@ public class ChatService {
         ChatDto chat = findChatById(chatId);
 
         chatRepository.delete(mapper.toEntity(chat));
+        messageServiceClient.deleteAllMessagesInChat(chatId);
     }
 
     private UUID getMyIdFromJwt(String authHeader) {
