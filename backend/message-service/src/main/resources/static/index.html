@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .action-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .message-id {
+            font-size: 0.8em;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-3">
+    <!-- Подключение -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <input type="text" id="jwtToken" class="form-control" placeholder="JWT Token">
+                <input type="text" id="chatId" class="form-control" placeholder="Chat ID">
+                <button id="connect" class="btn btn-primary">Connect</button>
+                <button id="disconnect" class="btn btn-danger" disabled>Disconnect</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Отправка сообщений -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <input type="text" id="message" class="form-control" placeholder="Your message">
+                <button id="send" class="btn btn-success">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Управление сообщениями -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="action-panel">
+                <h5>Message Actions</h5>
+
+                <!-- Обновление сообщения -->
+                <div class="input-group mb-3">
+                    <input type="text" id="updateMsgId" class="form-control" placeholder="Message ID">
+                    <input type="text" id="updateMsgText" class="form-control" placeholder="New text">
+                    <button id="updateBtn" class="btn btn-warning">Update</button>
+                </div>
+
+                <!-- Удаление сообщения -->
+                <div class="input-group">
+                    <input type="text" id="deleteMsgId" class="form-control" placeholder="Message ID">
+                    <button id="deleteBtn" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Лента сообщений -->
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <table class="table">
+                <thead>
+                <tr><th>Messages</th></tr>
+                </thead>
+                <tbody id="messages"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
